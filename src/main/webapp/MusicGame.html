@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width">
+	<title>Music Game</title>
+	<link rel="stylesheet" href="css/main.css" />
+	<link rel="stylesheet" href="css/jquery-ui.min.css" />
+	<script type="text/javascript" src="js/jquery-3.6.0.js"></script>
+	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+	<script type="text/javascript">
+		document.addEventListener("keypress", function onPress(event) {
+			if (event.key.toLowerCase() === "f") {
+				$('#2').click();
+				$('#2').addClass('active');
+			} else if (event.key.toLowerCase() === "d") {
+				$('#1').click();
+				$('#1').addClass('active');
+			} else if (event.key.toLowerCase() === "j") {
+				$('#3').click();
+				$('#3').addClass('active');
+			} else if (event.key.toLowerCase() === "k") {
+				$('#4').click();
+				$('#4').addClass('active');
+			} else if (event.key === ' ' || event.key === 'Spacebar') {
+				$('#start').click();
+			}
+		});
+		document.addEventListener("keyup", function onPress(event) {
+			if (event.key.toLowerCase() === "f") {
+				$('#2').removeClass('active');
+			} else if (event.key.toLowerCase() === "d") {
+				$('#1').removeClass('active');
+			} else if (event.key.toLowerCase() === "j") {
+				$('#3').removeClass('active');
+			} else if (event.key.toLowerCase() === "k") {
+				$('#4').removeClass('active');
+			} else if (event.key === ' ' || event.key === 'Spacebar') {
+			}
+		});
+		$(document).ready(function () {
+			$(document).tooltip();
+			var kick = new Audio("Sounds/Kick.wav");
+			var hihat = new Audio("Sounds/Hihat.wav");
+			var snare = new Audio("Sounds/Snare.wav");
+			var cymbal = new Audio("Sounds/Cymbal.wav");
+			kick.volume = 0.5;
+			hihat.volume = 0.5;
+			snare.volume = 0.5;
+			cymbal.volume = 0.5;//audio setting
+
+			var isEmpty; //check if there is no notes
+			var isMoving; //isStarted
+			var isShowingHow = true; //in tutorial it is not controlled by user
+			var isShowingHowSet = false;
+			var isTutorialMode = false;
+			var isClickedA = false;//used in calculating grades
+			var isClickedB = false;
+			var isClickedC = false;
+			var isClickedD = false;
+
+			var instruments = 4;
+			var bars = 2; //how many bars in a loop
+			var beats = 4; //how many beats in a bar
+			var bpm = 120; //speed *Beats Per Minute
+			var index = 0; //tool to go all instruments buttons
+			var metronomeIndex = 0;
+			var limit = 0//for metronome
+			var m; //metronome timer code
+			var t; //timer timer code
+			var msec = 0; //the part of millisecond
+			var startTime = [0, 0, 0, 0]; //instruments play time
+			var n = 0;
+			var average = 0;//calculate grades
+			var count;
+			var json;
+			var notes;
+			//set the panels
+			count = 0;
+			for (var i = 0; i < bars; i++) {
+				for (var j = 0; j < 4; j++) {
+					$('#d0').append("<button id='m" + count + "' class='metronome notCurrent'></button>");
+					count++;
+				}
+			}
+
+			$.ajax({
+				"url": "GameFunction",
+				"type": "get",
+				"data": { "function": "getScores" },
+				"datatype": "json",
+				"success": function (data) {
+					json = JSON.parse(data);
+					var option = '';
+					for (var i = 0; i < json.length; i++) {
+						var sheet = json[i];
+						option += "<option id='o" + i + "'>" + sheet.name + "</option>";
+						$("#sheet").empty();
+						$("#sheet").append("<option id='default'>Please choose</option>");
+						$("#sheet").append(option);
+					}
+				},
+				"error": function (xmlhttp, errorText) {
+					if (xmlhttp.status == "405") {
+						alert("Invalid request");
+					} else if (xmlhttp.status == "404") {
+						alert("URL not found");
+					} else if (xmlhttp.status == "500") {
+						alert("Server internal error");
+					} else {
+						alert("another exception");
+					}
+				}
+			})
+			//controls
+			$('#sheet').change(function () {
+				if ($('#showSheet').html() == "Hide current sheet") {
+					$("#instrument").css("display", "none");
+					$('#showSheet').html("Show current sheet");
+				}
+				var id = $('#sheet  option:selected').attr('id').replace('o', "");
+				if (id == "default") {
+					for (var a = 1; a <= instruments; a++) {
+						$("div[id='d" + a + "']").empty();
+					}
+				} else {
+					var sheet = json[id];
+					bpm = sheet.bpm;
+					beats = sheet.beats;
+					bars = sheet.bars;
+					notes = sheet.instruments;
+					$('#d0').empty();
+					count = 0;
+					for (var i = 0; i < bars; i++) {
+						for (var j = 0; j < 4; j++) {
+							$('#d0').append("<button id='m" + count + "' class='metronome notCurrent'></button>");
+							count++;
+						}
+					}
+					for (var a = 1, c = 97; a <= instruments; a++, c++) {
+						$("div[id='d" + a + "']").empty();
+						count = 0;
+						for (var i = 0; i < bars; i++) {
+							for (var j = 0; j < beats; j++) {
+								if (notes[a - 1][count] == 1) {
+									$("div[id='d" + a + "']").append("<button id='" + String.fromCharCode(c) + count + "' class='instrument selected'></button>");
+								} else if (notes[a - 1][count] == 0) {
+									$("div[id='d" + a + "']").append("<button id='" + String.fromCharCode(c) + count + "' class='instrument notSelected'></button>");
+								}
+								count++;
+							}
+							$("div[id='d" + a + "']").append("&nbsp;");
+						}
+					}
+				}
+				if (isMoving) {
+					$('#start').click();
+				}
+			})
+			$('#vol').on('input', function () {
+				var vol = $('#vol').val();
+				var v = vol / 100;
+				kick.volume = v;
+				hihat.volume = v;
+				snare.volume = v;
+				cymbal.volume = v;
+				$('#volume').html("Volume: " + vol);
+			});
+			$('#tutorialMode').click(function () {
+				if ($('#tutorialMode').html() == "OFF") {
+					$('#tutorialMode').html("ON");
+					isTutorialMode = true;
+				} else {
+					$('#tutorialMode').html("OFF");
+					isTutorialMode = false;
+				}
+				if (isMoving) {
+					clearInterval(m);
+					m = setInterval("move()", 60 / bpm * 1000 * (4 / beats));
+				}
+			})
+			$('#showSheet').click(function () {
+				if ($('#showSheet').html() == "Show current sheet") {
+					$("#instrument").css("display", "inline");
+					$('#showSheet').html("Hide current sheet");
+				} else {
+					$("#instrument").css("display", "none");
+					$('#showSheet').html("Show current sheet");
+				}
+			})
+			$("#dialog").dialog({
+				autoOpen: false,
+				width: 720,
+				height: 280
+			});
+			$('#instruction').click(function () {
+				$("#dialog").dialog("open");
+			})
+			$('#1').click(function () {
+				if (!isShowingHow && !isTutorialMode) {
+					kick.play();
+					kick.currentTime = 0;
+					if (startTime[0] == 0) {
+						startTime[0] = msec;
+						isClickedA = true;
+					} else if (startTime[0] != 0 && !isClickedA) {
+						n += 1;
+						average = (average * (n - 1) + Math.abs(msec - startTime[0])) / n;
+						startTime[0] = 0;
+					}
+				}
+			})
+			$('#2').click(function () {
+				if (!isShowingHow && !isTutorialMode) {
+					hihat.play();
+					hihat.currentTime = 0;
+					if (startTime[1] == 0) {
+						startTime[1] = msec;
+						isClickedB = true;
+					} else if (startTime[1] != 0 && !isClickedB) {
+						n += 1;
+						average = (average * (n - 1) + Math.abs(msec - startTime[1])) / n;
+						startTime[1] = 0;
+					}
+				}
+			})
+			$('#3').click(function () {
+				if (!isShowingHow && !isTutorialMode) {
+					snare.play();
+					snare.currentTime = 0;
+					if (startTime[2] == 0) {
+						startTime[2] = msec;
+						isClickedC = true;
+					} else if (startTime[2] != 0 && !isClickedC) {
+						n += 1;
+						average = (average * (n - 1) + Math.abs(msec - startTime[2])) / n;
+						startTime[2] = 0;
+					}
+				}
+			})
+			$('#4').click(function () {
+				if (!isShowingHow && !isTutorialMode) {
+					cymbal.play();
+					cymbal.currentTime = 0;
+					if (startTime[3] == 0) {
+						startTime[3] = msec;
+						isClickedD = true;
+					} else if (startTime[3] != 0 && !isClickedD) {
+						n += 1;
+						average = (average * (n - 1) + Math.abs(msec - startTime[3])) / n;
+						startTime[3] = 0;
+					}
+				}
+			})
+
+			$('#start').click(function () {
+				if ($('#sheet').val() == "Please choose") {
+					alert("Please choose a sheet");
+				} else {
+					if ($('#start').html() == "Start") {
+						checkEmpty();
+						m = setInterval("move()", 60 / bpm * 1000 * (4 / beats));
+						t = setInterval("timer()", 10);
+						$('#start').html('Stop');
+						isMoving = true;
+					} else {
+						clearInterval(m);
+						clearInterval(t);
+						msec = 0;
+						for (var i = beats * bars - 1; i >= 0; i--) {
+							$("button[id='m" + i + "']").removeClass('current');
+							$("button[id='m" + i + "']").addClass('notCurrent');
+						}
+						index = 0;
+						metronomeIndex=0;
+						$('#start').html('Start');
+						$('#grade').html('');
+						isMoving = false;
+						isShowingHow = true;
+						isShowingHowSet = false;
+					}
+				}
+
+			})
+			$('#bpmRange').change(function () {
+				if (isMoving) {
+					clearInterval(m);
+					m = setInterval("move()", 60 / bpm * 1000 * (4 / beats));
+				}
+			})
+			$('#bpmRange').on('input', function () {
+				bpm = $('#bpmRange').val();
+				$('#bpm').html("BPM: " + bpm);
+			});
+
+			move = function () {
+				if (index == 0) {
+					if ($("button[id='m" + (bars * 4 - 1) + "']").is('.current')) {
+						$("button[id='m" + (bars * 4 - 1) + "']").removeClass('current');
+						$("button[id='m" + (bars * 4 - 1) + "']").addClass('notCurrent');
+					}
+					$("button[id='m" + metronomeIndex + "']").removeClass('notCurrent');
+					$("button[id='m" + metronomeIndex + "']").addClass('current');
+					limit++;
+					if ($("button[id='a" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							kick.play();
+							kick.currentTime = 0;
+						} else {
+							if (startTime[0] == 0) {
+								startTime[0] = msec;
+							} else if (startTime[0] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[0])) / n;
+								isClickedA = false;
+								startTime[0] = 0;
+							}
+						}
+					}
+					if ($("button[id='b" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							hihat.play();
+							hihat.currentTime = 0;
+						} else {
+							if (startTime[1] == 0) {
+								startTime[1] = msec;
+							} else if (startTime[1] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[1])) / n;
+								isClickedB = false;
+								startTime[1] = 0;
+							}
+						}
+					}
+					if ($("button[id='c" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							snare.play();
+							snare.currentTime = 0;
+						} else {
+							if (startTime[2] == 0) {
+								startTime[2] = msec;
+							} else if (startTime[2] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[2])) / n;
+								isClickedC = false;
+								startTime[2] = 0;
+							}
+						}
+					}
+					if ($("button[id='d" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							cymbal.play();
+							cymbal.currentTime = 0;
+						} else {
+							if (startTime[3] == 0) {
+								startTime[3] = msec;
+							} else if (startTime[3] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[3])) / n;
+								isClickedD = false;
+								startTime[3] = 0;
+							}
+						}
+					}
+					index += 1;
+					metronomeIndex++;
+				} else {
+					if (limit == 0) {
+						$("button[id='m" + (metronomeIndex - 1) + "']").removeClass('current');
+						$("button[id='m" + (metronomeIndex - 1) + "']").addClass('notCurrent');
+						$("button[id='m" + metronomeIndex + "']").removeClass('notCurrent');
+						$("button[id='m" + metronomeIndex + "']").addClass('current');
+						if (metronomeIndex == bars * 4 - 1) {
+							metronomeIndex = 0;
+						} else {
+							metronomeIndex++;
+						}
+					}
+					limit++;
+					if ($("button[id='a" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							kick.play();
+							kick.currentTime = 0;
+						} else {
+							if (startTime[0] == 0) {
+								startTime[0] = msec;
+							} else if (startTime[0] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[0])) / n;
+								isClickedA = false;
+								startTime[0] = 0;
+							}
+						}
+					}
+					if ($("button[id='b" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							hihat.play();
+							hihat.currentTime = 0;
+						} else {
+							if (startTime[1] == 0) {
+								startTime[1] = msec;
+							} else if (startTime[1] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[1])) / n;
+								isClickedB = false;
+								startTime[1] = 0;
+							}
+						}
+					}
+					if ($("button[id='c" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							snare.play();
+							snare.currentTime = 0;
+						} else {
+							if (startTime[2] == 0) {
+								startTime[2] = msec;
+							} else if (startTime[2] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[2])) / n;
+								isClickedC = false;
+								startTime[2] = 0;
+							}
+						}
+					}
+					if ($("button[id='d" + index + "']").is('.selected')) {
+						if (isShowingHow || isTutorialMode) {
+							cymbal.play();
+							cymbal.currentTime = 0;
+						} else {
+							if (startTime[3] == 0) {
+								startTime[3] = msec;
+							} else if (startTime[3] != 0) {
+								n += 1;
+								average = (average * (n - 1) + Math.abs(msec - startTime[3])) / n;
+								isClickedD = false;
+								startTime[3] = 0;
+							}
+						}
+					}
+					if (index == (bars * beats - 1)) {
+						index = 0;
+						if (!isShowingHow && !isEmpty && !isTutorialMode) {
+							if (average < 60 / bpm * 100 * 0.1) {
+								$('#grade').html('Grade: S');
+							} else if (average < 60 / bpm * 100 * 0.2) {
+								$('#grade').html('Grade: A');
+							} else if (average < 60 / bpm * 100 * 0.3) {
+								$('#grade').html('Grade: B');
+							} else if (average < 60 / bpm * 100 * 0.4) {
+								$('#grade').html('Grade: C');
+							} else if (average >= 60 / bpm * 100 * 0.4) {
+								$('#grade').html('Grade: D');
+							}
+						}
+						average = 0;
+						n = 0;
+						if (!isShowingHowSet) {
+							isShowingHow = false;
+							isShowingHowSet = true;
+						}
+					} else {
+						index += 1;
+					}
+				}
+				if (limit > beats / 4 - 1) {
+					limit = 0;
+				}
+			}
+
+			timer = function () {
+				msec += 1;
+			}
+			function checkEmpty() {
+				isEmpty = true;
+				for (var a = 1, c = 97; a <= instruments; a++, c++) {
+					for (var i = 0; i < beats * bars; i++) {
+						if ($("button[id='" + String.fromCharCode(c) + i + "']").is('.selected')) {
+							isEmpty = false;
+							return;
+						}
+					}
+				}
+			}
+		})
+
+	</script>
+	<style>
+		.metronome.current {
+			background-image: url(img/dock3.png);
+			background-size: 40px 20px;
+			background-repeat: no-repeat;
+			padding: 10px 20px;
+		}
+
+		.metronome.notCurrent {
+			background-image: url(img/dock4.png);
+			background-size: 40px 20px;
+			background-repeat: no-repeat;
+			padding: 10px 20px;
+		}
+
+		.instrument.selected {
+			background-image: url(img/dock2.png);
+			background-size: 18px 18px;
+			background-repeat: no-repeat;
+			padding: 9px 9px;
+		}
+
+		.instrument.notSelected {
+			background-image: url(img/dock4.png);
+			background-size: 18px 18px;
+			background-repeat: no-repeat;
+			padding: 9px 9px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="guideDock">
+		<ul class="guideList">
+			<li class="guideListItem"><button id="active" class="guideChoice"
+					onclick="window.location.href = 'MusicGame.html'">Square Music Game</button></li>
+			<li class="guideListItem"><button class="guideChoice"
+					onclick="window.location.href = 'MusicScoreMaking.html'">Sheet DIY</button></li>
+			<li class="guideListItem"><button class="guideChoice"
+					onclick="window.location.href = 'MusicPlaying.html'">Music Playing</button></li>
+		</ul>
+	</div>
+	<div align="center" class="content">
+		<div class='window'><label id="grade" class="label"></label></div>
+		<div class='launch'>
+			<label class="label">Sheets: </label>
+			<select id="sheet">
+				<option id="default">Please choose</option>
+			</select>
+			<button id="start">Start</button>
+		</div>
+		<div class="settings"><label class="label">Tutorial Mode: </label><button id="tutorialMode">OFF</button>
+			<label id="bpm" class="label">BPM: 120</label><input id="bpmRange" type="range" min="60" max="240"
+				value="120" />
+			<label id="volume" class="label">Volume: 50</label><input type="range" id="vol" value="50" />
+		</div>
+
+		<div id="tips" class="label">Tips
+			<div id="tipChoices">
+				<button id="instruction">Instruction</button>
+				<button id="showSheet">Show current sheet</button>
+			</div>
+		</div>
+		<div id="d0"></div>
+		<div id="instrument" style="display: none;">
+			<div id="d1" title="Kick"></div>
+			<div id="d2" title="Hihat"></div>
+			<div id="d3" title="Snare"></div>
+			<div id="d4" title="Cymbal"></div>
+		</div>
+
+		<div style="margin-top: 20px;">
+			<button id='1' class="pad" title="Kick Shortcut: D"></button>
+			<button id='2' class="pad" title="Hihat Shortcut: F"></button>
+			<button id='3' class="pad" title="Snare Shortcut: J"></button>
+			<button id='4' class="pad" title="Cymbal Shortcut: K"></button>
+		</div>
+
+		<div id="dialog" title="Instruction" class="label" hidden="true">
+			<p>Play with music! Only rythm for now though. Choose a sheet then click start.
+				Press D for Kick, F for hihat, J for snare and K for cymbal.
+				In first bars(see the metronome) you can listen to the rythm then try to copy it from next bars,
+				or open the tutorial mode to continue listening. If it is still too hard, go tips->show current sheet to
+				see how to play this sheet.
+				At the top of body you can see the grade according to your performance in the last bars.
+				Set the settings to control the hardness if it is needed.
+			</p>
+		</div>
+	</div>
+</body>
+
+</html>

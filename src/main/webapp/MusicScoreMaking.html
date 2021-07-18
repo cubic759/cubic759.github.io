@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Music Score Making</title>
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/jquery-ui.min.css" />
+    <script type="text/javascript" src="js/jquery-3.6.0.js"></script>
+    <script type="text/javascript" src="js/WebAudioRecorder.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.min.js"></script>
+    <script type="text/javascript">
+        document.addEventListener("keypress", function onPress(event) {
+            if (event.key === ' ' || event.key === 'Spacebar') {
+                $('#start').click();
+            }
+        });
+        $(document).ready(function () {
+            $(document).tooltip();
+            var kick = new Audio("Sounds/Kick.wav");
+            var hihat = new Audio("Sounds/Hihat.wav");
+            var snare = new Audio("Sounds/Snare.wav");
+            var cymbal = new Audio("Sounds/Cymbal.wav");
+            kick.volume = 0.5;
+            hihat.volume = 0.5;
+            snare.volume = 0.5;
+            cymbal.volume = 0.5;//audio setting
+
+            var isClickingA = false;//used in notes editing
+            var isClickingB = false;
+            var isClickingC = false;
+            var isClickingD = false;
+            var isMoving; //isStarted
+            var isNotSelectClick;
+            var isSelectClick;
+            var nameAvailable;
+
+            var instruments = 4;
+            var limit = 0//for metronome
+            var count = 0;
+            var bars = 2;
+            var beats = 4;
+            var bpm = 120; //speed *Beats Per Minute
+            var index = 0; //tool to go all instruments buttons
+            var metronomeIndex = 0;//tool to go all metronome buttons
+            var m; //metronome timer code
+            var jsonObject;
+            count = 0;
+            for (var i = 0; i < bars; i++) {
+                for (var j = 0; j < 4; j++) {
+                    $('#d0').append("<button id='m" + count + "' class='metronome notCurrent'></button>");
+                    count++;
+                }
+            }
+            for (var a = 1, c = 97; a <= instruments; a++, c++) {
+                count = 0;
+                for (var i = 0; i < bars; i++) {
+                    for (var j = 0; j < beats; j++) {
+                        $("div[id='d" + a + "']").append("<button id='" + String.fromCharCode(c) + count + "' class='instrument notSelected'></button>");
+                        count++;
+                    }
+                    $("div[id='d" + a + "']").append("&nbsp;");
+                }
+            }
+            $.ajax({
+                "url": "GameFunction",
+                "type": "get",
+                "data": { "function": "getScores" },
+                "datatype": "json",
+                "success": function (data) {
+                    if (data != "" && data != null) {
+                        jsonObject = JSON.parse(data);
+                        var li = '';
+                        for (var i = 0; i < jsonObject.length; i++) {
+                            var sheet = jsonObject[i];
+                            li += "<li id='o" + i + "'>" + sheet.name + "<button id='del" + i + "'>Delete</button></li>";
+                            $("#sheetView").empty();
+                            $("#sheetView").append(li);
+                        }
+                    }
+                },
+                "error": function (xmlhttp, errorText) {
+                    if (xmlhttp.status == "405") {
+                        alert("Invalid request");
+                    } else if (xmlhttp.status == "404") {
+                        alert("URL not found");
+                    } else if (xmlhttp.status == "500") {
+                        alert("Server internal error");
+                    } else {
+                        alert("another exception");
+                    }
+                }
+            })
+            $('#sheetView').on('click', 'button', function (event) {
+                var id = $(event.target).attr('id').replace("del", "");
+                $("li[id='" + id + "']").remove();
+                var json = JSON.stringify(jsonObject[id]);
+                $.ajax({
+                    "url": "GameFunction",
+                    "type": "get",
+                    "data": { "function": "deleteScore", "data": json },
+                    "datatype": "json",
+                    "success": function () {
+                        alert("Deleted successfully");
+                        window.location.reload();
+                    },
+                    "error": function (xmlhttp, errorText) {
+                        if (xmlhttp.status == "405") {
+                            alert("Invalid request");
+                        } else if (xmlhttp.status == "404") {
+                            alert("URL not found");
+                        } else if (xmlhttp.status == "500") {
+                            alert("Server internal error");
+                        } else {
+                            alert("another exception");
+                        }
+                    }
+                })
+            });
+            $('#barSelect').change(function () {
+                bars = $('#barSelect  option:selected').val();
+                $('#d0').empty();
+                count = 0;
+                for (var i = 0; i < bars; i++) {
+                    for (var j = 0; j < 4; j++) {
+                        $('#d0').append("<button id='m" + count + "' class='metronome notCurrent'></button>");
+                        count++;
+                    }
+                }
+                for (var a = 1, c = 97; a <= instruments; a++, c++) {
+                    $("div[id='d" + a + "']").empty();
+                    count = 0;
+                    for (var i = 0; i < bars; i++) {
+                        for (var j = 0; j < beats; j++) {
+                            $("div[id='d" + a + "']").append("<button id='" + String.fromCharCode(c) + count + "' class='instrument notSelected'></button>");
+                            count++;
+                        }
+                        $("div[id='d" + a + "']").append("&nbsp;");
+                    }
+                }
+                if (isMoving) {
+                    $('#start').click();
+                }
+            })
+            $('#beatSelect').change(function () {
+                beats = $('#beatSelect  option:selected').val();
+                $('#d0').empty();
+                count = 0;
+                for (var i = 0; i < bars; i++) {
+                    for (var j = 0; j < 4; j++) {
+                        $('#d0').append("<button id='m" + count + "' class='metronome notCurrent'></button>");
+                        count++;
+                    }
+                }
+                for (var a = 1, c = 97; a <= instruments; a++, c++) {
+                    $("div[id='d" + a + "']").empty();
+                    count = 0;
+                    for (var i = 0; i < bars; i++) {
+                        for (var j = 0; j < beats; j++) {
+                            $("div[id='d" + a + "']").append("<button id='" + String.fromCharCode(c) + count + "' class='instrument notSelected'></button>");
+                            count++;
+                        }
+                        $("div[id='d" + a + "']").append("&nbsp;");
+                    }
+                }
+                if (isMoving) {
+                    $('#start').click();
+                }
+            })
+            $('#vol').on('input', function () {
+                var vol = $('#vol').val();
+                var v = vol / 100;
+                kick.volume = v;
+                hihat.volume = v;
+                snare.volume = v;
+                cymbal.volume = v;
+                $('#volume').html("Volume: " + vol);
+            });
+            $('#bpmRange').change(function () {
+                if (isMoving) {
+                    clearInterval(m);
+                    m = setInterval("move()", 60 / bpm * 1000 * (4 / beats));
+                }
+            })
+            $('#bpmRange').on('input', function () {
+                bpm = $('#bpmRange').val();
+                $('#bpm').html("BPM: " + bpm);
+            });
+            $('#name').bind("input propertychange",function(){
+            	$.ajax({
+	                "url": "GameFunction",
+	                "type": "get",
+	                "data": { "function": "checkName", "data": name },
+	                "datatype": "json",
+	                "success": function (data) {
+	                    if(data=="Available"){
+	                    	nameAvailable=true;
+	                    }else{
+	                    	nameAvailable=false;
+	                    }
+	                },
+	                "error": function (xmlhttp, errorText) {
+	                    if (xmlhttp.status == "405") {
+	                        alert("Invalid request");
+	                    } else if (xmlhttp.status == "404") {
+	                        alert("URL not found");
+	                    } else if (xmlhttp.status == "500") {
+	                        alert("Server internal error");
+	                    } else {
+	                        alert("another exception");
+	                    }
+	                }
+	            })
+            })
+            $('#save').click(function () {
+                var name = $('#name').val();
+                if (name != "") {
+                	if (nameAvailable) {
+                        var obj = {};
+                        obj['name'] = name;
+                        obj['bpm'] = bpm;
+                        obj['bars'] = bars;
+                        obj['beats'] = beats;
+                        var array = new Array(instruments);
+                        for (var i = 0; i < instruments; i++) {
+                            array[i] = new Array(bars * beats);
+                        }
+                        for (var i = 0; i < instruments; i++) {
+                            for (var j = 0; j < beats * bars; j++) {
+                                array[i][j] = 0;
+                            }
+                        }
+                        for (var a = 0, c = 97; a <= instruments; a++, c++) {
+                            count = 0;
+                            for (var i = 0; i < bars; i++) {
+                                for (var j = 0; j < beats; j++) {
+                                    if ($("button[id='" + String.fromCharCode(c) + count + "']").is('.selected')) {
+                                        array[a][count] = 1;
+                                    }
+                                    count++;
+                                }
+                            }
+                        }
+                        obj['instruments'] = array;
+                        var json = JSON.stringify(obj);
+                        $.ajax({
+                            "url": "GameFunction",
+                            "type": "get",
+                            "data": { "function": "sendScore", "data": json },
+                            "datatype": "json",
+                            "success": function () {
+                                window.location.reload();
+                                alert("Saved successfully");
+                            },
+                            "error": function (xmlhttp, errorText) {
+                                if (xmlhttp.status == "405") {
+                                    alert("Invalid request");
+                                } else if (xmlhttp.status == "404") {
+                                    alert("URL not found");
+                                } else if (xmlhttp.status == "500") {
+                                    alert("Server internal error");
+                                } else {
+                                    alert("another exception");
+                                }
+                            }
+                        })
+                    } else {
+                        alert("The name is already used");
+                    }
+
+                } else {
+                    alert("Please input the name of this sheet");
+                }
+            })
+            $('#start').click(function () {
+                if ($('#start').html() == "Start") {
+                    m = setInterval("move()", 60 / bpm * 1000 * (4 / beats));
+                    $('#start').html('Stop');
+                    isMoving = true;
+                } else {
+                    clearInterval(m);
+                    for (var i = bars * beats - 1; i >= 0; i--) {
+                        $("button[id='m" + i + "']").removeClass('current');
+                        $("button[id='m" + i + "']").addClass('notCurrent');
+                    }
+                    index = 0;
+                    metronomeIndex = 0;
+                    $('#start').html('Start');
+                    isMoving = false;
+                }
+            })
+            move = function () {
+                if (index == 0) {
+                    if ($("button[id='m" + (bars * 4 - 1) + "']").is('.current')) {
+                        $("button[id='m" + (bars * 4 - 1) + "']").removeClass('current');
+                        $("button[id='m" + (bars * 4 - 1) + "']").addClass('notCurrent');
+                    }
+                    $("button[id='m" + metronomeIndex + "']").removeClass('notCurrent');
+                    $("button[id='m" + metronomeIndex + "']").addClass('current');
+                    limit++;
+                    if ($("button[id='a" + index + "']").is('.selected')) {
+                        kick.play();
+                        kick.currentTime = 0;
+                    }
+                    if ($("button[id='b" + index + "']").is('.selected')) {
+                        hihat.play();
+                        hihat.currentTime = 0;
+                    }
+                    if ($("button[id='c" + index + "']").is('.selected')) {
+                        snare.play();
+                        snare.currentTime = 0;
+                    }
+                    if ($("button[id='d" + index + "']").is('.selected')) {
+                        cymbal.play();
+                        cymbal.currentTime = 0;
+                    }
+                    index += 1;
+                    metronomeIndex++;
+                } else {
+                    if (limit == 0) {
+                        $("button[id='m" + (metronomeIndex - 1) + "']").removeClass('current');
+                        $("button[id='m" + (metronomeIndex - 1) + "']").addClass('notCurrent');
+                        $("button[id='m" + metronomeIndex + "']").removeClass('notCurrent');
+                        $("button[id='m" + metronomeIndex + "']").addClass('current');
+                        if (metronomeIndex == bars * 4 - 1) {
+                            metronomeIndex = 0;
+                        } else {
+                            metronomeIndex++;
+                        }
+                    }
+                    limit++;
+                    if ($("button[id='a" + index + "']").is('.selected')) {
+                        kick.play();
+                        kick.currentTime = 0;
+                    }
+                    if ($("button[id='b" + index + "']").is('.selected')) {
+                        hihat.play();
+                        hihat.currentTime = 0;
+                    }
+                    if ($("button[id='c" + index + "']").is('.selected')) {
+                        snare.play();
+                        snare.currentTime = 0;
+                    }
+                    if ($("button[id='d" + index + "']").is('.selected')) {
+                        cymbal.play();
+                        cymbal.currentTime = 0;
+                    }
+                    if (index == (bars * beats - 1)) {
+                        index = 0;
+                    } else {
+                        index += 1;
+                    }
+                }
+                if (limit > beats / 4 - 1) {
+                    limit = 0;
+                }
+            }
+            //select buttons
+            $(document).mouseup(function () {
+                isClickingA = false;
+                isClickingB = false;
+                isClickingC = false;
+                isClickingD = false;
+                isNotSelectClick = false;
+                isSelectClick = false;
+            })
+            $('#d1').on('mousedown', 'button', function (event) {
+                isClickingA = true;
+                if ($(event.target).is('.selected')) {
+                    $(event.target).removeClass('selected');
+                    $(event.target).addClass('notSelected');
+                    isNotSelectClick = true;
+                } else {
+                    $(event.target).removeClass('notSelected');
+                    $(event.target).addClass('selected');
+                    isSelectClick = true;
+                }
+            });
+            $('#d1').on('mouseenter', 'button', function (event) {
+                if (isClickingA) {
+                    if ($(event.target).is('.selected') && isNotSelectClick) {
+                        $(event.target).removeClass('selected');
+                        $(event.target).addClass('notSelected');
+                    } else if ($(event.target).is('.notSelected') && isSelectClick) {
+                        $(event.target).removeClass('notSelected');
+                        $(event.target).addClass('selected');
+                    }
+                }
+            });
+
+            $('#d2').on('mousedown', 'button', function (event) {
+                isClickingB = true;
+                if ($(event.target).is('.selected')) {
+                    $(event.target).removeClass('selected');
+                    $(event.target).addClass('notSelected');
+                    isNotSelectClick = true;
+                } else {
+                    $(event.target).removeClass('notSelected');
+                    $(event.target).addClass('selected');
+                    isSelectClick = true;
+                }
+            });
+            $('#d2').on('mouseenter', 'button', function (event) {
+                if (isClickingB) {
+                    if ($(event.target).is('.selected') && isNotSelectClick) {
+                        $(event.target).removeClass('selected');
+                        $(event.target).addClass('notSelected');
+                    } else if ($(event.target).is('.notSelected') && isSelectClick) {
+                        $(event.target).removeClass('notSelected');
+                        $(event.target).addClass('selected');
+                    }
+                }
+            });
+
+            $('#d3').on('mousedown', 'button', function (event) {
+                isClickingC = true;
+                if ($(event.target).is('.selected')) {
+                    $(event.target).removeClass('selected');
+                    $(event.target).addClass('notSelected');
+                    isNotSelectClick = true;
+                } else {
+                    $(event.target).removeClass('notSelected');
+                    $(event.target).addClass('selected');
+                    isSelectClick = true;
+                }
+            });
+            $('#d3').on('mouseenter', 'button', function (event) {
+                if (isClickingC) {
+                    if ($(event.target).is('.selected') && isNotSelectClick) {
+                        $(event.target).removeClass('selected');
+                        $(event.target).addClass('notSelected');
+                    } else if ($(event.target).is('.notSelected') && isSelectClick) {
+                        $(event.target).removeClass('notSelected');
+                        $(event.target).addClass('selected');
+                    }
+                }
+            });
+
+            $('#d4').on('mousedown', 'button', function (event) {
+                isClickingD = true;
+                if ($(event.target).is('.selected')) {
+                    $(event.target).removeClass('selected');
+                    $(event.target).addClass('notSelected');
+                    isNotSelectClick = true;
+                } else {
+                    $(event.target).removeClass('notSelected');
+                    $(event.target).addClass('selected');
+                    isSelectClick = true;
+                }
+            });
+            $('#d4').on('mouseenter', 'button', function (event) {
+                if (isClickingD) {
+                    if ($(event.target).is('.selected') && isNotSelectClick) {
+                        $(event.target).removeClass('selected');
+                        $(event.target).addClass('notSelected');
+                    } else if ($(event.target).is('.notSelected') && isSelectClick) {
+                        $(event.target).removeClass('notSelected');
+                        $(event.target).addClass('selected');
+                    }
+                }
+            });
+        })
+
+        //drag and drop to edit from others delete sheets
+
+    </script>
+    <style>
+        .metronome.current {
+            background-image: url(img/dock3.png);
+            background-size: 40px 20px;
+            background-repeat: no-repeat;
+            padding: 10px 20px;
+        }
+
+        .metronome.notCurrent {
+            background-image: url(img/dock4.png);
+            background-size: 40px 20px;
+            background-repeat: no-repeat;
+            padding: 10px 20px;
+        }
+
+        .instrument.selected {
+            background-image: url(img/dock2.png);
+            background-size: 18px 18px;
+            background-repeat: no-repeat;
+            padding: 9px 9px;
+        }
+
+        .instrument.notSelected {
+            background-image: url(img/dock4.png);
+            background-size: 18px 18px;
+            background-repeat: no-repeat;
+            padding: 9px 9px;
+        }
+
+        #sheetView {
+            background-color: rgb(228, 228, 228);
+            list-style-type: none;
+            width: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="guideDock">
+        <ul class="guideList">
+            <li class="guideListItem"><button class="guideChoice"
+                    onclick="window.location.href = 'MusicGame.html'">Square Music Game</button></li>
+            <li class="guideListItem"><button id="active" class="guideChoice"
+                    onclick="window.location.href = 'MusicScoreMaking.html'">Sheet DIY</button></li>
+            <li class="guideListItem"><button class="guideChoice"
+                    onclick="window.location.href = 'MusicPlaying.html'">Music Playing</button></li>
+        </ul>
+    </div>
+    <div align="center" class="content">
+        <div class='launch'>
+            <label class="label">Name: </label>
+            <input type="text" id="name" title="Enter a name before saving">
+            <label class="label">Bars: </label>
+            <select id="barSelect">
+                <option>2</option>
+                <option>4</option>
+                <option>8</option>
+            </select>
+            <label class="label">Beats: </label>
+            <select id="beatSelect">
+                <option>4</option>
+                <option>8</option>
+            </select>
+            <button id="start">Start</button>
+            <label id="bpm" class="label">BPM: 120</label>
+            <input id="bpmRange" type="range" min="60" max="240" value="120" />
+            <label id="volume" class="label">Volume: 50</label>
+            <input type="range" id="vol" value="50" />
+        </div>
+        <div id="d0"></div>
+        <div id="d1" title="Kick"></div>
+        <div id="d2" title="Hihat"></div>
+        <div id="d3" title="Snare"></div>
+        <div id="d4" title="Cymbal"></div>
+        <button id="save">Save</button>
+        <ul id="sheetView"></ul>
+
+    </div>
+</body>
+
+</html>

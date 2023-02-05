@@ -10,7 +10,7 @@ string = '['
 length = len(arr)
 for i in range(length):
     string += '{\"title\":\"'
-    string += arr[i]
+    string += arr[i][:-4]
     string += '\"}'
     if i != length - 1:
         string += ','

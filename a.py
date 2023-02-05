@@ -1,9 +1,11 @@
 #!D:\Python3.7.9\python.exe
 import os
+import sys
 
 path = os.path.dirname(__file__)
-print(path)
-arr = os.walk("waves").__next__()[2]
+if path == '':
+    path = sys.path[0]
+arr = os.walk(path + "\waves").__next__()[2]
 string = '['
 length = len(arr)
 for i in range(length):
@@ -16,4 +18,3 @@ string += ']'
 file = open(path + "/index.json", 'w')
 file.write(string)
 file.close()
-input()

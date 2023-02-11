@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="divport" content="width=device-width" />
+    <link rel="stylesheet" href="./library.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="./library.js"></script>
+  </head>
+
+  <body>
+    <div
+      id="navigationBar"
+      style="
+        flex: none;
+        position: relative;
+        height: 20px;
+        background: #f8f8f8;
+        font-size: 14pt;
+        color: #000000;
+      "
+    >
+      习作库
+    </div>
+    <div class="container">
+      <div class="buttons">
+        <div class="content2Container" onclick="setcycling">
+          <div class="cycleButton">
+            <img class="cycleImage" src="../images/noCycle.svg" />
+            <p class="cycleText">单次播放</p>
+          </div>
+        </div>
+      </div>
+      <div class="title">最近上传</div>
+      <div class="work"><button onclick="onPush()">a</button></div>
+      <div class="title">过去上传</div>
+      <div class="work"></div>
+    </div>
+  </body>
+</html>

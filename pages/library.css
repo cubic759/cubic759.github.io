@@ -1,0 +1,208 @@
+/**index.wxss**/
+page {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background-color: #f6f6f6;
+}
+
+#navigationBar {
+  flex: none;
+  height: 44px;
+  position: relative;
+}
+
+.container {
+  flex: 1 1 auto;
+  z-index: 0;
+}
+
+.buttons {
+  margin-top: 10px;
+  width: 93%;
+  flex-direction: row;
+  display: flex;
+  position: relative;
+}
+
+.clearButton {
+  position: absolute;
+  height: 60px;
+  width: 100%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+.indicatorImage {
+  position: absolute;
+  top: 7px;
+  left: 4px;
+  height: 8px;
+  width: 8px;
+}
+
+.content1Container {
+  flex: 1;
+  position: relative;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clearButtonHover {
+  position: absolute;
+  height: 60px;
+  width: 100%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e2e2;
+  border-radius: 10px;
+}
+
+.cycleButton {
+  position: absolute;
+  right: 0;
+  height: 60px;
+  width: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+.cycleButtonHover {
+  position: absolute;
+  right: 0;
+  height: 60px;
+  width: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e2e2;
+  border-radius: 10px;
+}
+
+.cycleImage{
+  position: absolute;
+  top:16px;
+  left:0px;
+  height: 65px;
+  width: 50px;
+}
+
+.cycleText{
+  margin-left: 35px;
+}
+
+.content2Container {
+  flex: 1;
+  height: 60px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title {
+  z-index: 10;
+  font-family: PingFang SC;
+  font-weight: 500;
+  color: #000000;
+  font-weight: bold;
+  font-size: 14pt;
+  margin-top: 30rpx;
+  margin-bottom: 10rpx;
+  margin-left: 30rpx;
+  margin-right: auto;
+  left: 0;
+}
+
+.work {
+  position: relative;
+  z-index: 0;
+  margin-top: 30rpx;
+  border-radius: 5px;
+  background-color: white;
+  width: 93%;
+  height: 60px;
+  flex-direction: row;
+  display: flex;
+}
+
+.textContainer {
+  flex: 1 1 auto;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workBlockTitle {
+  position: absolute;
+  z-index: 100;
+  font-weight: 400;
+  font-size: 14pt;
+  left: 20px;
+}
+
+.workBottomLine {
+  border-radius: 5px 5px 5px 5px;
+  position: absolute;
+  background: #45b9e5;
+  bottom: 0;
+  left: 0;
+  height: 5px;
+  width: 0%;
+}
+
+.workWholeLine {
+  z-index: 0;
+  border-radius: 5px;
+  background: #b7e6f8;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+}
+
+.controlContainer {
+  flex: 0 0 auto;
+  width: 60px;
+}
+
+.controlContainerHover {
+  flex: 0 0 auto;
+  border-radius: 5px;
+  width: 60px;
+  background: #e2e2e2;
+}
+
+.control {
+  position: absolute;
+  width: 60px;
+  margin: 10px 0px 10px 0px;
+  top: 0;
+  right: 0;
+  height: 40px;
+  width: 60px;
+  border-left: 1px solid #00000017;
+}
+
+.controlImage {
+  padding: 10px 20px 10px 20px;
+  height: 20px;
+  width: 20px;
+  margin-right: 5px;
+}

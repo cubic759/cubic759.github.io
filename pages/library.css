@@ -31,7 +31,7 @@ body {
 .container {
   width: 100%;
   position: absolute;
-  top: 50px;
+  top: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -2,8 +2,7 @@
 html{
   height: 100%;
   width: 100%;
-  user-select:none
-
+  user-select:none;
 }
 body {
   display: flex;
@@ -12,6 +11,7 @@ body {
   background-color: rgb(245, 245, 245);
   flex-direction: column;
   margin: 0 auto;
+  padding: 0;
 }
 
 #navigationBar {

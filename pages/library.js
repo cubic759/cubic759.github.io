@@ -216,6 +216,7 @@ function setWorkInfo() {
   let a = document.getElementsByClassName('work')
   control = a[0]
   if (isMobile) {
+    console.log('isMobile')
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
         if (!audio.ended && !audio.paused) {

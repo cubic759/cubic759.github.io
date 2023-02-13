@@ -215,23 +215,26 @@ function setWorkInfo() {
   let a = document.getElementsByClassName('work')
   control = a[0]
   if (isMobile) {
-    console.log('isMobile')
+    document.getElementsByClassName('title').innerHTML += 'isMobile'
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
+          document.getElementsByClassName('title').innerHTML += 'moving'
           onTouchMove(e)
         }
       })
       bindEvent(i, 'touchend', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
+          document.getElementsByClassName('title').innerHTML += 'touched'
           onTouchEnd(e)
         }
       })
       bindEvent(i, 'touchstart', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
+          document.getElementsByClassName('title').innerHTML += 'touching'
           onTouchStart(e)
         }
       })
@@ -307,9 +310,10 @@ function onTouchMove(e) {
         shouldUpdate = false
       }
       setCurrentLength('0%')
-
       let position = e.clientX - control.offsetLeft
       let total = control.offsetWidth - 60
+      document.getElementsByClassName('title').innerHTML +=
+        e.clientX + ' ' + e.data + ' ' + position + ' ' + total
       if (position <= total && position >= 0) {
         ratio = position / total
         setTapLength(getFixed(ratio * 100).toString() + '%')

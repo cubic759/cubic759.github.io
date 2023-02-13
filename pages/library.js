@@ -129,6 +129,7 @@ function startPlay(index) {
   }
   audio.pause()
   audio = new Audio()
+  audio.autoplay = true
   audio.preload = 'auto'
   playingIndex = index
   audio.addEventListener('timeupdate', function () {

@@ -181,12 +181,11 @@ body {
 
 .control {
   position: absolute;
-  width: 60px;
+  width: 59px;
   margin: 10px 0px 10px 0px;
   top: 0;
   right: 0;
   height: 40px;
-  width: 60px;
   border-left: 1px solid #00000017;
 }
 

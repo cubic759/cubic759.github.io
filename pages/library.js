@@ -24,13 +24,6 @@ let isMobile = false
 let clickedIndex = -1
 
 window.onload = function () {
-  if (window.WeixinJSBridge) {
-    document.addEventListener('WeixinJSBridgeReady', function () {
-      audio = document.getElementById('is')
-      audio.play()
-      console.log(audio)
-    })
-  }
   checkOS()
   setWorkInfo()
 }

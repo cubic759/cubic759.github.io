@@ -227,7 +227,6 @@ function setWorkInfo() {
   let a = document.getElementsByClassName('work')
   control = a[0]
   if (isMobile) {
-    console.log('isMobile')
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
         if (!audio.ended && !audio.paused) {
@@ -369,6 +368,7 @@ function onTouchEnd(e) {
         if (isMobile) {
           position = e.changedTouches[0].clientX - control.offsetLeft
           total = control.offsetWidth - 60
+          console.log(control.offsetLeft, control.offsetWidth)
         } else {
           position = e.clientX - control.offsetLeft
           total = control.offsetWidth - 60

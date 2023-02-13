@@ -29,15 +29,7 @@ window.onload = function () {
 }
 
 function checkOS() {
-  var userAgentInfo = navigator.userAgent.toLowerCase()
-  var Agents = ['android', 'iphone', 'symbianos', 'windows phone', 'ipad', 'ipod']
-  //var ly = document.referrer
-  for (var v = 0; v < Agents.length; v++) {
-    if (userAgentInfo.indexOf(Agents[v]) >= 0) {
-      // && (ly == '' || ly == null)
-      isMobile = true
-    }
-  }
+  isMobile = navigator.userAgentData.mobile
 }
 
 function setAttr(isClass, selectName, attrName, value) {

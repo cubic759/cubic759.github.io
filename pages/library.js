@@ -28,6 +28,7 @@ window.onload = function () {
     document.addEventListener('WeixinJSBridgeReady', function () {
       audio = document.getElementById('is')
       audio.play()
+      console.log(audio)
     })
   }
   checkOS()

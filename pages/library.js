@@ -29,7 +29,19 @@ window.onload = function () {
 }
 
 function checkOS() {
-  isMobile = navigator.userAgentData.mobile
+  if (navigator.userAgentData != undefined) {
+    isMobile = navigator.userAgentData.mobile
+  } else {
+    var userAgentInfo = navigator.userAgent.toLowerCase()
+    var Agents = ['android', 'iphone', 'symbianos', 'windows phone', 'ipad', 'ipod']
+    //var ly = document.referrer
+    for (var v = 0; v < Agents.length; v++) {
+      if (userAgentInfo.indexOf(Agents[v]) >= 0) {
+        // && (ly == '' || ly == null)
+        isMobile = true
+      }
+    }
+  }
 }
 
 function setAttr(isClass, selectName, attrName, value) {
@@ -119,6 +131,7 @@ function startPlay(index) {
     }
   })
   audio.src = getFileName(files[playingIndex].title)
+  console.log(audio.src)
   audio.addEventListener('ended', function () {
     if (cycling == 0) {
       stopped = true

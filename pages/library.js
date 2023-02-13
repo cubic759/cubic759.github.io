@@ -10,18 +10,34 @@ let files = [
   { title: '2022-03-01' },
   { title: '2022-02-26' },
   { title: '2022-02-25' },
-  { title: '2020-10-02' },
 ]
 let audio = new Audio()
 let playingIndex = -1
 let shouldUpdate = false
-let control = undefined
-let stopped = false
 let ratio = undefined
+let control = undefined
 let cycling = 0
+let tapped = true
+let timeStamp = 0
+let touching = false
+let isMobile = false
+let clickedIndex = -1
 
 window.onload = function () {
-  //start()
+  checkOS()
+  setWorkInfo()
+}
+
+function checkOS() {
+  var userAgentInfo = navigator.userAgent.toLowerCase()
+  var Agents = ['android', 'iphone', 'symbianos', 'windows phone', 'ipad', 'ipod']
+  //var ly = document.referrer
+  for (var v = 0; v < Agents.length; v++) {
+    if (userAgentInfo.indexOf(Agents[v]) >= 0) {
+      // && (ly == '' || ly == null)
+      isMobile = true
+    }
+  }
 }
 
 function setAttr(isClass, selectName, attrName, value) {
@@ -37,10 +53,10 @@ function setAttr(isClass, selectName, attrName, value) {
 function setText(isClass, selectName, value) {
   if (isClass) {
     for (let i of document.getElementsByClassName(selectName)) {
-      i.innerHTML(value)
+      i.innerHTML = value
     }
   } else {
-    document.getElementById(selectName).innerHTML(value)
+    document.getElementById(selectName).innerHTML = value
   }
 }
 
@@ -51,28 +67,13 @@ function getFixed(value) {
 
 function getAudioLength() {
   //计算进度条的长度
-  let audio = this.data.audio
   return parseInt((audio.currentTime / audio.duration) * 100).toString() + '%'
 }
 function getFileName(title) {
   //合并成文件名
-  return cachePath + '/' + title + '.mp3'
+  return '../waves/' + title + '.mp3'
 }
-function getData(i) {
-  //下载音乐文件
-  return new Promise((resolve) => {
-    this.setData({
-      downloadTask: wx.downloadFile({
-        url: 'https://cubic759.github.io/waves/' + i.title + '.mp3',
-        filePath: this.getFileName(i.title),
-        success(res) {
-          resolve(res)
-        },
-      }),
-    })
-  })
-}
-function setcycling() {
+function setCycling() {
   if (cycling < 2) {
     cycling += 1
   } else {
@@ -91,88 +92,81 @@ function setcycling() {
 }
 function setCurrentLength(value) {
   //设置进度条的长度
-  let playingIndex = this.data.playingIndex
   if (playingIndex != -1) {
-    let a = this.data.workList
-    a[playingIndex].currentLength = value
-    this.setData({
-      workList: a,
-    })
+    workList[playingIndex].currentLength = value
+    document
+      .getElementsByClassName('workBottomLine')
+      [playingIndex].setAttribute('style', 'width:' + value)
   }
 }
-function setTapLength() {
+function setTapLength(value) {
   //设置调进度条的长度
-  let a = this.data.workList
-  a[this.data.playingIndex].tapLength = value
-  this.setData({
-    workList: a,
-  })
-}
-function setIsPlaying(isPlaying) {
-  //设置按钮图片
-  let playingIndex = this.data.playingIndex
   if (playingIndex != -1) {
-    let data = this.data.workList
-    data[playingIndex].isPlaying = isPlaying
-    this.setData({
-      workList: data,
-    })
+    workList[playingIndex].tapLength = value
+    document
+      .getElementsByClassName('workWholeLine')
+      [playingIndex].setAttribute('style', 'width:' + value)
   }
 }
+
 function startPlay(index) {
-  let audio = this.data.audio
   setCurrentLength('0%')
-  setIsPlaying(0)
-  audio.stop()
-  audio.destroy()
-  audio = wx.createInnerAudioContext({
-    useWebAudioImplement: true,
-  })
-  this.setData({
-    playingIndex: index,
-    audio: audio,
-  })
-  audio.onTimeUpdate(() => {
-    if (this.data.shouldUpdate) {
-      this.setCurrentLength(this.getAudioLength())
+  if (playingIndex != -1) {
+    workList[playingIndex].isPlaying = 0
+    document
+      .getElementsByClassName('controlImage')
+      [playingIndex].setAttribute('src', '../images/play.svg')
+  }
+  audio.pause()
+  audio = new Audio()
+  playingIndex = index
+  audio.addEventListener('timeupdate', function () {
+    if (shouldUpdate) {
+      setCurrentLength(getAudioLength())
     }
   })
-  audio.autoplay = true
-  audio.src = this.getFileName(this.data.workList[index].title)
-  audio.onEnded(() => {
-    let cycling = this.data.cycling
-    let playingIndex = this.data.playingIndex
+  audio.src = getFileName(files[playingIndex].title)
+  audio.addEventListener('ended', function () {
     if (cycling == 0) {
-      this.setData({
-        stopped: true,
-      })
-      this.setCurrentLength('0%')
-      this.setIsPlaying(0)
+      stopped = true
+      setCurrentLength('0%')
+      if (playingIndex != -1) {
+        workList[playingIndex].isPlaying = 0
+        setAttr(true, 'controlImage', 'src', '../images/play.svg')
+      }
     } else if (cycling == 1) {
-      let number = this.data.workList.length
-      if (playingIndex < number - 1) {
-        this.playWaveFile(playingIndex + 1)
+      if (playingIndex < files.length - 1) {
+        startPlay(playingIndex + 1)
       } else {
-        this.startPlay(0)
+        startPlay(0)
       }
     } else {
-      this.startPlay(playingIndex)
+      startPlay(playingIndex)
     }
   })
-  this.setData({
-    shouldUpdate: true,
-  })
-  this.setIsPlaying(1)
-  audio.onCanplay(() => {
+  shouldUpdate = true
+  if (playingIndex != -1) {
+    workList[playingIndex].isPlaying = 1
+    document
+      .getElementsByClassName('controlImage')
+      [playingIndex].setAttribute('src', '../images/pause.svg')
+  }
+  audio.addEventListener('canplay', function () {
     audio.play()
-    this.setData({
-      stopped: false,
-    })
   })
+  stopped = false
 }
+
+function bindEvent(dom, eventName, listener) {
+  if (dom.attachEvent) {
+    dom.attachEvent('on' + eventName, listener)
+  } else {
+    dom.addEventListener(eventName, listener)
+  }
+}
+
 function setWorkInfo() {
   //显示作品
-
   let all = Array.from(files)
   for (let info of all) {
     info['isPlaying'] = 0
@@ -180,201 +174,191 @@ function setWorkInfo() {
     info['tapLength'] = '0%'
   }
   workList = all
-
-  for (let i of document.getElementsByClassName('work')) {
-    i.innerHTML = `<div
+  let containers = document.getElementsByClassName('list')
+  let i
+  for (let j = 0; j < files.length; j++) {
+    if (j == 0) {
+      i = containers[0]
+    } else {
+      i = containers[1]
+    }
+    i.innerHTML +=
+      `<div class="work">
+      <div
     class="textContainer"
-    bindtouchmove="onTouchMove"
-    bindtouchend="onTouchEnd"
-    bindtouchstart="onTouchStart"
   >
-    <div class="workBlockTitle">{{work.title}}</div>
-    <div class="workBottomLine" style="width:{{work.currentLength}}"></div>
-    <div class="workWholeLine" style="width:{{work.tapLength}}"></div>
+    <div class="workBlockTitle">` +
+      files[j].title +
+      `</div>
+    <div class="workBottomLine" style="width:` +
+      workList[j].currentLength +
+      `"></div>
+    <div class="workWholeLine" style="width:` +
+      workList[j].tapLength +
+      `"></div>
   </div>
   <div
-    class="controlContainer"
-    bindtap="onClick"
+    class="controlContainer" data="` +
+      j +
+      `"
+    onclick="onClick(this)"
   >
     <div class="control">
-      <cover-image
-        class="controlImage"
-        wx:if="{{work.isPlaying==-1}}"
-        src="{{loadingImagePath}}"
-      ></cover-image>
       <image
         class="controlImage"
-        wx:if="{{work.isPlaying==0}}"
         src="../images/play.svg"
       ></image>
-      <image
-        class="controlImage"
-        wx:if="{{work.isPlaying==1}}"
-        src="../../images/pause.svg"
-      ></image>
     </div>
-  </div>`
+  </div></div>`
   }
-}
-function downloadFile(path) {
-  return new Promise((resolve) => {
-    let fileNames = []
-    $.ajax({
-      url: path,
-      success(data) {
-        $(data)
-          .find('td > a')
-          .each(function () {
-            if (openFile($(this).attr('href'))) {
-              fileNames.push($(this).attr('href'))
-            }
-          })
-        console.log(fileNames)
-        resolve(fileNames)
-      },
+
+  let a = document.getElementsByClassName('work')
+  control = a[0]
+  if (isMobile) {
+    console.log('isMobile')
+    for (let i of a) {
+      bindEvent(i, 'touchmove', function (e) {
+        if (!audio.ended && !audio.paused) {
+          e['data'] = i.lastChild.getAttribute('data')
+          onTouchMove(e)
+        }
+      })
+      bindEvent(i, 'touchend', function (e) {
+        if (!audio.ended && !audio.paused) {
+          e['data'] = i.lastChild.getAttribute('data')
+          onTouchEnd(e)
+        }
+      })
+      bindEvent(i, 'touchstart', function (e) {
+        if (!audio.ended && !audio.paused) {
+          e['data'] = i.lastChild.getAttribute('data')
+          onTouchStart(e)
+        }
+      })
+      bindEvent(i, 'touchcancel', function () {
+        if (!audio.ended && !audio.paused) {
+          onTouchCancel()
+        }
+      })
+    }
+  } else {
+    for (let i of a) {
+      bindEvent(i, 'mousemove', function (e) {
+        if (!audio.ended && !audio.paused) {
+          e['data'] = i.lastChild.getAttribute('data')
+          onTouchMove(e)
+        }
+      })
+      bindEvent(i, 'mousedown', function (e) {
+        if (!audio.ended && !audio.paused) {
+          e['data'] = i.lastChild.getAttribute('data')
+          onTouchStart(e)
+        }
+      })
+    }
+    bindEvent(document, 'mouseup', function (e) {
+      if (!audio.ended && !audio.paused) {
+        onTouchEnd(e)
+      }
     })
-  })
-}
-async function playWaveFile(index) {
-  //检查文件后startPlay()
-  let data = this.data.workList
-  data[index].isPlaying = -1
-  workList = data
-  startPlay(index)
-}
-async function start() {
-  setWorkInfo()
-  control = document.getElementsByClassName('work').item(0)
+  }
 }
 
 function onClick(e) {
   //点击控件播放/暂停
-  let audio = this.data.audio
-  let index = Number(e.currentTarget.dataset.index)
-  if (this.data.playingIndex == index) {
-    if (this.data.stopped) {
-      audio.stop()
-      this.setData({
-        shouldUpdate: true,
-      })
-      audio.onCanplay(() => {
-        audio.play()
-        this.setData({
-          stopped: false,
-        })
-      })
-      this.setIsPlaying(1)
-    } else if (audio.paused) {
-      this.setData({
-        shouldUpdate: true,
-      })
+  let index = Number(e.getAttribute('data'))
+  if (playingIndex == index) {
+    if (audio.ended) {
+      audio.pause()
+      shouldUpdate = true
       audio.play()
-      this.setData({
-        stopped: false,
-      })
-      this.setIsPlaying(1)
+      stopped = false
+      workList[playingIndex].isPlaying = 1
+      document
+        .getElementsByClassName('controlImage')
+        [playingIndex].setAttribute('src', '../images/pause.svg')
+    } else if (audio.paused) {
+      shouldUpdate = true
+      audio.play()
+      stopped = false
+      workList[playingIndex].isPlaying = 1
+      document
+        .getElementsByClassName('controlImage')
+        [playingIndex].setAttribute('src', '../images/pause.svg')
     } else {
       audio.pause()
-      this.setData({
-        shouldUpdate: false,
-      })
-      this.setIsPlaying(0)
+      shouldUpdate = false
+      workList[playingIndex].isPlaying = 0
+      document
+        .getElementsByClassName('controlImage')
+        [playingIndex].setAttribute('src', '../images/play.svg')
+      setTapLength('0%')
     }
   } else {
-    this.playWaveFile(index)
+    startPlay(index)
   }
 }
 function onTouchMove(e) {
   //滑动调整进度
-  if (!this.data.audio.paused) {
-    let index = Number(e.currentTarget.dataset.index)
-    if (index == this.data.playingIndex) {
-      if (this.data.shouldUpdate) {
-        this.setData({
-          shouldUpdate: false,
-        })
+  if (e && !audio.paused && !audio.ended && touching) {
+    let index = Number(e.data)
+    if (index == playingIndex) {
+      if (shouldUpdate) {
+        shouldUpdate = false
       }
-      this.setCurrentLength('0%')
-      let position = e.changedTouches[0].pageX - this.data.control.left
-      let control = this.data.control
-      let total = control.right - control.left - 60
+      setCurrentLength('0%')
+
+      let position = e.clientX - control.offsetLeft
+      let total = control.offsetWidth - 60
       if (position <= total && position >= 0) {
-        let ratio = position / total
-        this.setData({
-          ratio: ratio,
-        })
-        this.setTapLength(this.getFixed(ratio * 100).toString() + '%')
+        ratio = position / total
+        setTapLength(getFixed(ratio * 100).toString() + '%')
       }
     }
   }
 }
 function onTouchStart(e) {
-  this.setData({
-    timeStamp: e.timeStamp,
-  })
+  clickedIndex = e.data
+  touching = true
+  if (!audio.paused && !audio.ended) {
+    timeStamp = e.timeStamp
+  }
 }
 function setProgress(ratio) {
-  let audio = this.data.audio
   audio.pause()
-  audio.seek(audio.duration * this.getFixed(ratio))
-  this.setTapLength('0%')
-  this.setCurrentLength(this.getFixed(ratio * 100).toString() + '%')
-  this.setData({
-    shouldUpdate: true,
-  })
-  audio.onCanplay(() => {
+  audio.currentTime = audio.duration * getFixed(ratio)
+  setTapLength('0%')
+  setCurrentLength(getFixed(ratio * 100).toString() + '%')
+  shouldUpdate = true
+  audio.addEventListener('canplay', function () {
     audio.play()
-    this.setData({
-      stopped: false,
-    })
+    stopped = false
   })
-}
-function onPush() {
-  console.log('a')
-  let audio = new Audio('../waves/' + files[0].title + '.mp3')
-  audio.play()
 }
 function onTouchEnd(e) {
   //手指离开设置进度
-  let audio = this.data.audio
-  if (!audio.paused) {
-    let index = Number(e.currentTarget.dataset.index)
-    if (index == this.data.playingIndex) {
-      let tapped = e.timeStamp - this.data.timeStamp < 350
+  touching = false
+  if (!audio.paused && clickedIndex != -1) {
+    let index = Number(clickedIndex)
+    if (index == playingIndex) {
+      tapped = e.timeStamp - timeStamp < 350
       if (tapped) {
-        let control = this.data.control
-        let position = e.changedTouches[0].pageX - control.left
-        let total = control.right - control.left - 60
+        let position = e.clientX - control.offsetLeft
+        let total = control.offsetWidth - 60
         if (position <= total) {
-          this.setProgress(position / total)
+          setProgress(position / total)
         }
       } else {
-        this.setProgress(this.data.ratio)
+        setProgress(ratio)
       }
     }
+    clickedIndex = -1
   }
 }
 function onTouchCancel() {
   //恢复原状
-  this.setTapLength('0%')
-  if (!this.data.shouldUpdate) {
-    this.setData({
-      shouldUpdate: true,
-    })
-  }
-}
-function deleteFiles() {
-  let strArr = fileManager.readdirSync(cachePath)
-  for (let i of strArr) {
-    fileManager.unlinkSync(cachePath + '/' + i)
-  }
-}
-function onUnload() {
-  //避免多重播放
-  let audio = this.data.audio
-  audio.stop()
-  audio.destroy()
-  if (this.data.cleaning) {
-    this.deleteFiles()
+  setTapLength('0%')
+  if (!audio.paused && !audio.ended && !shouldUpdate) {
+    shouldUpdate = true
   }
 }

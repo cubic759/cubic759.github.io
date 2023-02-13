@@ -215,26 +215,22 @@ function setWorkInfo() {
   let a = document.getElementsByClassName('work')
   control = a[0]
   if (isMobile) {
-    alert('isMobile')
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
-          alert('moving')
           onTouchMove(e)
         }
       })
       bindEvent(i, 'touchend', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
-          alert('touched')
           onTouchEnd(e)
         }
       })
       bindEvent(i, 'touchstart', function (e) {
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
-          alert('touching')
           onTouchStart(e)
         }
       })
@@ -310,9 +306,15 @@ function onTouchMove(e) {
         shouldUpdate = false
       }
       setCurrentLength('0%')
-      let position = e.clientX - control.offsetLeft
-      let total = control.offsetWidth - 60
-      alert(e.clientX + ' ' + e.data + ' ' + position + ' ' + total)
+      let position
+      let total
+      if (isMobile) {
+        position = e.changedTouches[0].clientX - control.offsetLeft
+        total = control.offsetWidth - 60
+      } else {
+        position = e.clientX - control.offsetLeft
+        total = control.offsetWidth - 60
+      }
       if (position <= total && position >= 0) {
         ratio = position / total
         setTapLength(getFixed(ratio * 100).toString() + '%')
@@ -328,26 +330,36 @@ function onTouchStart(e) {
   }
 }
 function setProgress(ratio) {
-  audio.pause()
-  audio.currentTime = audio.duration * getFixed(ratio)
-  setTapLength('0%')
-  setCurrentLength(getFixed(ratio * 100).toString() + '%')
-  shouldUpdate = true
-  audio.addEventListener('canplay', function () {
-    audio.play()
-    stopped = false
-  })
+  if (ratio) {
+    audio.pause()
+    audio.currentTime = audio.duration * getFixed(ratio)
+    setTapLength('0%')
+    setCurrentLength(getFixed(ratio * 100).toString() + '%')
+    shouldUpdate = true
+    audio.addEventListener('canplay', function () {
+      audio.play()
+      stopped = false
+    })
+  }
 }
 function onTouchEnd(e) {
   //手指离开设置进度
   touching = false
+
   if (!audio.paused && clickedIndex != -1) {
     let index = Number(clickedIndex)
     if (index == playingIndex) {
       tapped = e.timeStamp - timeStamp < 350
       if (tapped) {
-        let position = e.clientX - control.offsetLeft
-        let total = control.offsetWidth - 60
+        let position
+        let total
+        if (isMobile) {
+          position = e.changedTouches[0].clientX - control.offsetLeft
+          total = control.offsetWidth - 60
+        } else {
+          position = e.clientX - control.offsetLeft
+          total = control.offsetWidth - 60
+        }
         if (position <= total) {
           setProgress(position / total)
         }

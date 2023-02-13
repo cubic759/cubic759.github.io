@@ -71,7 +71,7 @@ function getAudioLength() {
 }
 function getFileName(title) {
   //合并成文件名
-  return '../waves/' + title + '.mp3'
+  return 'https://cubic759.github.io/waves/' + title + '.mp3'
 }
 function setCycling() {
   if (cycling < 2) {

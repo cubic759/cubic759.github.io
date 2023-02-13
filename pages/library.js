@@ -25,7 +25,10 @@ let clickedIndex = -1
 
 window.onload = function () {
   if (window.WeixinJSBridge) {
-    console.log(window.WeixinJSBridge)
+    document.addEventListener('WeixinJSBridgeReady', function () {
+      audio.src = getFileName(files[0].title)
+      audio.play()
+    })
   }
   checkOS()
   setWorkInfo()

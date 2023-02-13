@@ -24,6 +24,9 @@ let isMobile = false
 let clickedIndex = -1
 
 window.onload = function () {
+  if (window.WeixinJSBridge) {
+    console.log(window.WeixinJSBridge)
+  }
   checkOS()
   setWorkInfo()
 }

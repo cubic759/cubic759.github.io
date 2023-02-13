@@ -387,7 +387,7 @@ function onTouchCancel() {
   }
 }
 
-;(function (win, lib) {
+/*;(function (win, lib) {
   var doc = win.document //当前文档对象
   var docEl = doc.documentElement //文档对象根元素的只读属性
   var metaEl = doc.querySelector('meta[name="viewport"]')
@@ -535,4 +535,4 @@ function onTouchCancel() {
     }
     return val
   }
-})(window, window['lib'] || (window['lib'] = {}))
+})(window, window['lib'] || (window['lib'] = {}))*/

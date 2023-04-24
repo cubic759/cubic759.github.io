@@ -198,6 +198,8 @@ function setTapLength (value) {
 }
 
 function startPlay (index) {
+  setCurrentLength('0%')
+  setTapLength('0%')
   showCurrentLength(false)
   showTapLength(false)
   if (playingIndex != -1) {

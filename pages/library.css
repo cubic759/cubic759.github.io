@@ -1,9 +1,10 @@
 /**index.wxss**/
-html{
+html {
   height: 100%;
   width: 100%;
-  user-select:none;
+  user-select: none;
 }
+
 body {
   display: flex;
   height: 100%;
@@ -42,9 +43,10 @@ body {
 .buttons {
   flex-shrink: 0;
   margin-top: 15px;
+  display: flex;
   width: 93%;
   position: relative;
-  z-index: 100;
+  z-index: 20;
 }
 
 .cycleButton {
@@ -58,25 +60,50 @@ body {
   border-radius: 10px;
 }
 
-.cycleImage{
+.themeButton {
+  position: relative;
+  left: 0;
+  height: 60px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.cycleImage {
   position: absolute;
-  top:16px;
-  left:10px;
+  top: 16px;
+  left: 10px;
   height: 65px;
   width: 50px;
 }
 
-.cycleText{
+.themeImage {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  height: 30px;
+  width: 30px;
+}
+
+.cycleText {
   FONT-WEIGHT: 100;
   position: relative;
   margin-left: 40px;
 }
 
-.content2Container {
+.themeText {
+  FONT-WEIGHT: 100;
+  position: relative;
+  margin-left: 40px;
+}
+
+.content1Container {
   height: 60px;
-  width: 150px;
+  width: 100px;
   position: absolute;
-  right:0;
+  right: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,16 +111,41 @@ body {
   background-color: #f0f0f0;
 }
 
-.content2Container:active{
+.content1Container:active {
   height: 60px;
-  width: 150px;
+  width: 100px;
   position: absolute;
-  right:0;
+  right: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background-color: #cacaca;
+  background-color: #a9a9a9 !important;
+}
+
+
+.content2Container {
+  height: 60px;
+  width: 150px;
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: #f0f0f0;
+}
+
+.content2Container:active {
+  height: 60px;
+  width: 150px;
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: #ababab !important;
 }
 
 .title {
@@ -111,7 +163,7 @@ body {
   left: 0;
 }
 
-.list{
+.list {
   width: 100%;
   float: none;
   display: flex;
@@ -131,7 +183,7 @@ body {
   background-color: #f0f0f0;
   width: 93%;
   height: 60px;
-  flex-shrink:0;
+  flex-shrink: 0;
   flex-direction: row;
   display: flex;
 }
@@ -143,7 +195,7 @@ body {
   left: 0;
   position: relative;
   display: flex;
-  flex-shrink:0;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
 }
@@ -169,7 +221,7 @@ body {
 .workWholeLine {
   z-index: 0;
   border-radius: 5px;
-  background: #b7e6f8;
+  background: #bfedff;
   position: absolute;
   top: 0;
   left: 0;
@@ -184,7 +236,7 @@ body {
 
 .controlContainer:active {
   border-radius: 5px;
-  background: #e2e2e2;
+  background: #b4b4b4 !important;
 }
 
 .control {

@@ -198,7 +198,7 @@ function setTapLength (value) {
 }
 
 function startPlay (index) {
-  showCurrentLength(true)
+  showCurrentLength(false)
   showTapLength(false)
   if (playingIndex != -1) {
     workList[playingIndex].isPlaying = 0
@@ -273,6 +273,7 @@ function startPlay (index) {
     audio.play()
   })
   stopped = false
+  showCurrentLength(true)
 }
 
 function bindEvent (dom, eventName, listener) {

@@ -3,7 +3,7 @@ import os
 import sys
 
 
-def compare(s1: str, s2: str):
+def compare(s1, s2):
     if s1.find('w') != -1 and s2.find('w') != -1:
         a1 = s1.split('w')[1]
         a2 = s2.split('w')[1]
@@ -24,7 +24,7 @@ def compare(s1: str, s2: str):
 path = os.path.dirname(__file__)
 if path == '':
     path = sys.path[0]
-arr = os.walk(path + "\waves").__next__()[2]
+arr = next(os.walk(path + "\waves"))[2]
 string = '['
 length = len(arr)
 latest = '0-0-0'

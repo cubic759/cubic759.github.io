@@ -198,7 +198,7 @@ function setTapLength (value) {
 }
 
 function startPlay (index) {
-  showCurrentLength(false)
+  showCurrentLength(true)
   showTapLength(false)
   if (playingIndex != -1) {
     workList[playingIndex].isPlaying = 0

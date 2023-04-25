@@ -23,6 +23,18 @@ let clickedIndex = -1
 window.onload = function () {
   checkOS()
   setWorkInfo()
+  checkTime()
+}
+
+function checkTime () {
+  var time = new Date()
+  let t = time.getHours()
+  if (t < 7 || t > 18) {
+    theme = 1
+    setAttr(true, 'themeImage', 'src', '../images/dark.svg')
+    setText(true, 'themeText', '黑')
+    changeTheme(1)
+  }
 }
 
 function checkOS () {
@@ -230,6 +242,8 @@ function startPlay (index) {
     }
     if (cycling == 0) {
       stopped = true
+      setCurrentLength('0%')
+      setTapLength('0%')
       showCurrentLength(false)
       showTapLength(false)
       if (playingIndex != -1) {
@@ -242,6 +256,8 @@ function startPlay (index) {
         startPlay(playingIndex + 1)
       } else {
         stopped = true
+        setCurrentLength('0%')
+        setTapLength('0%')
         showCurrentLength(false)
         showTapLength(false)
         if (playingIndex != -1) {

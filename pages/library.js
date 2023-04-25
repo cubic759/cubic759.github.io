@@ -409,6 +409,7 @@ function setWorkInfo () {
   if (isMobile) {
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
+        e.preventDefault()
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchMove(e)

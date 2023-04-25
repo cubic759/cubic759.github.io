@@ -81,11 +81,18 @@ function checkTime () {
 function selectWork (index) {
   $('.work').css('border', 'none')
   $('.work').eq(index).css('border', '1px solid ' + workBorder)
-  var scrollTop = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
-  window.scrollTo({
-    top: document.getElementsByClassName('work')[index].offsetTop - 135,
-    behavior: "smooth"
-  })
+  if (index == 0) {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    })
+  } else {
+    window.scrollTo({
+      top: document.getElementsByClassName('work')[index].offsetTop - 135 / 714 * (document.documentElement.clientHeight || document.body.clientHeight),
+      behavior: "smooth"
+    })
+  }
+
 }
 
 function checkOS () {

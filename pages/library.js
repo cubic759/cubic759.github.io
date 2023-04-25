@@ -3,6 +3,7 @@ let workList = [
   { title: '空曲目2', isPlaying: 0 },
 ]
 let cycleTxt = ["单次播放", "单列播放", "列表循环", "单曲循环"]
+let themeTxt = ["明亮", "黑暗"]
 let files = []
 $.getJSON("../index.json", function (data) {
   files = data
@@ -20,6 +21,7 @@ let touching = false
 let isMobile = false
 let clickedIndex = -1
 let selectingIndex = 0
+let workBorder = "#79d9ff"
 
 document.addEventListener('keydown', (e) => {
   if (e.key == ' ') {
@@ -71,15 +73,15 @@ function checkTime () {
     theme = 1
     $('.themeImage').attr('hidden', 'true')
     $('.themeImage').eq(theme).removeAttr('hidden')
-    setText(true, 'themeText', '黑色')
-    changeTheme(1)
+    setText(true, 'themeText', themeTxt[theme])
+    changeTheme(theme)
   }
 }
 
 function selectWork (index) {
   $('.work').css('border', 'none')
-  $('.work').eq(index).css('border', '1px solid rgb(26 164 205 / 63%)')
-  window.scrollTo(0, 80 * selectingIndex)
+  $('.work').eq(index).css('border', '1px solid ' + workBorder)
+  window.scrollTo(0, document.getElementsByClassName('work')[index].offsetTop - document.documentElement.clientHeight * 0.1)
 }
 
 function checkOS () {
@@ -150,16 +152,12 @@ function setTheme () {
   }
   $('.themeImage').attr('hidden', 'true')
   $('.themeImage').eq(theme).removeAttr('hidden')
-  if (theme == 0) {
-    setText(true, 'themeText', '白色')
-  } else {
-    setText(true, 'themeText', '黑色')
-  }
+  setText(true, 'themeText', themeTxt[theme])
   changeTheme(theme)
 }
 
 function changeTheme (value) {
-  if (value) {
+  if (value) {//dark
     $('#navigationBar').css("color", "white")
     $('#navigationBar').css("background", "rgb(37 37 37)")
     $('body').css("background-color", "rgb(33 33 33)")
@@ -169,9 +167,11 @@ function changeTheme (value) {
     $('.themeText').css("color", "white")
     $('.title').css("color", "white")
     $('.work').css("background-color", "#1d1d1d")
+    workBorder = "rgb(23 111 137)"
+    $('.work').eq(selectingIndex).css('border', '1px solid ' + workBorder)
     $('.workBlockTitle').css("color", "white")
-    $('.workWholeLine').css("background", "rgb(69 124 145)")
-    $('.workBottomLine').css("background", "rgb(26 97 124)")
+    $('.workWholeLine').css("background", "rgb(23 111 137)")
+    $('.workBottomLine').css("background", "rgb(23 111 137)")
     $('.control').css("border-left", "1px solid #fefefe17")
     $('.cycleImage').each(function () {
       str = $(this).attr('src')
@@ -183,7 +183,7 @@ function changeTheme (value) {
       str = str.replace('.svg', "_dark.svg")
       $(this).attr('src', str)
     })
-  } else {
+  } else {//light
     $('#navigationBar').css("color", "black")
     $('#navigationBar').css("background", "#f8f8f8")
     $('body').css("background-color", "rgb(245, 245, 245)")
@@ -193,9 +193,11 @@ function changeTheme (value) {
     $('.themeText').css("color", "black")
     $('.title').css("color", "black")
     $('.work').css("background-color", "#f0f0f0")
+    workBorder = "rgb(121 202 234)"
+    $('.work').eq(selectingIndex).css('border', '1px solid ' + workBorder)
     $('.workBlockTitle').css("color", "black")
-    $('.workWholeLine').css("background", "#bfedff")
-    $('.workBottomLine').css("background", "#45b9e5")
+    $('.workWholeLine').css("background", "rgb(121 202 234)")
+    $('.workBottomLine').css("background", "rgb(121 202 234)")
     $('.control').css("border-left", "1px solid #00000017")
     $('.cycleImage').each(function () {
       str = $(this).attr('src')

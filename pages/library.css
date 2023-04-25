@@ -211,9 +211,9 @@ body {
 }
 
 .workBottomLine {
-  border-radius: 5px 5px 5px 5px;
+  border-radius: 4px 4px 4px 4px;
   position: absolute;
-  background: #45b9e5;
+  background: rgb(121 202 234);
   bottom: 0;
   left: 0;
   height: 3px;
@@ -222,8 +222,8 @@ body {
 
 .workWholeLine {
   z-index: 0;
-  border-radius: 5px;
-  background: #bfedff;
+  border-radius: 4px;
+  background: rgb(121 202 234);
   position: absolute;
   top: 0;
   left: 0;

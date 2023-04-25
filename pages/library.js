@@ -81,7 +81,11 @@ function checkTime () {
 function selectWork (index) {
   $('.work').css('border', 'none')
   $('.work').eq(index).css('border', '1px solid ' + workBorder)
-  window.scrollTo(0, document.getElementsByClassName('work')[index].offsetTop - document.documentElement.clientHeight * 0.1)
+  var scrollTop = document.documentElement.scrollTop || window.pageYOffset || document.body.scrollTop
+  window.scrollTo({
+    top: document.getElementsByClassName('work')[index].offsetTop - 135,
+    behavior: "smooth"
+  })
 }
 
 function checkOS () {
@@ -409,7 +413,6 @@ function setWorkInfo () {
   if (isMobile) {
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
-        e.preventDefault()
         if (!audio.ended && !audio.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchMove(e)
@@ -528,6 +531,7 @@ function onTouchMove (e) {
   if (e && !audio.paused && !audio.ended && touching) {
     let index = Number(e.data)
     if (index == playingIndex) {
+      e.preventDefault()
       if (shouldUpdate) {
         shouldUpdate = false
       }

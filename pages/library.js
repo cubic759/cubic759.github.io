@@ -19,7 +19,56 @@ let timeStamp = 0
 let touching = false
 let isMobile = false
 let clickedIndex = -1
+let selectingIndex = 0
 
+document.addEventListener('keydown', (e) => {
+  if (e.key == ' ') {
+    e.preventDefault()
+    startPlay(selectingIndex)
+    window.scrollTo(0, 30 * selectingIndex);
+  }
+  else if (e.key == 'ArrowDown') {
+    e.preventDefault()
+    if (selectingIndex != files.length - 1) {
+      selectingIndex++
+    } else {
+      selectingIndex = 0
+    }
+  } else if (e.key == 'ArrowUp') {
+    e.preventDefault()
+    if (selectingIndex != 0) {
+      selectingIndex--
+    } else {
+      selectingIndex = files.length - 1
+    }
+  } else if (e.key == 'ArrowLeft') {
+    e.preventDefault()
+    if (!audio.paused && !audio.stopped) {
+      audio.pause()
+      audio.currentTime = audio.currentTime - 5
+      setCurrentLength(getFixed(audio.currentTime / audio.duration * 100).toString() + '%')
+      shouldUpdate = true
+      audio.addEventListener('canplay', function () {
+        audio.play()
+        stopped = false
+      })
+    }
+  } else if (e.key == 'ArrowRight') {
+    e.preventDefault()
+    if (!audio.paused && !audio.stopped) {
+      audio.pause()
+      audio.currentTime = audio.currentTime + 5
+      setCurrentLength(getFixed(audio.currentTime / audio.duration * 100).toString() + '%')
+      shouldUpdate = true
+      audio.addEventListener('canplay', function () {
+        audio.play()
+        stopped = false
+      })
+    }
+  } else if (e.key == 'Tab') {
+    setCycling()
+  }
+});
 window.onload = function () {
   checkOS()
   setWorkInfo()
@@ -32,7 +81,7 @@ function checkTime () {
   if (t < 7 || t > 18) {
     theme = 1
     setAttr(true, 'themeImage', 'src', '../images/dark.svg')
-    setText(true, 'themeText', '黑')
+    setText(true, 'themeText', '黑色')
     changeTheme(1)
   }
 }
@@ -84,7 +133,7 @@ function getAudioLength () {
 }
 function getFileName (title) {
   //合并成文件名
-  return 'https://cubic759.github.io/waves/' + title + '.mp3'
+  return '../waves/' + title + '.mp3'
 }
 function setCycling () {
   if (cycling < 3) {
@@ -116,11 +165,11 @@ function setTheme () {
   }
   if (theme == 0) {
     setAttr(true, 'themeImage', 'src', '../images/light.svg')
-    setText(true, 'themeText', '白')
+    setText(true, 'themeText', '白色')
     changeTheme(0)
   } else {
     setAttr(true, 'themeImage', 'src', '../images/dark.svg')
-    setText(true, 'themeText', '黑')
+    setText(true, 'themeText', '黑色')
     changeTheme(1)
   }
 }

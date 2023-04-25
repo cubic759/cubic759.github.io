@@ -10,7 +10,7 @@
   <script type="text/javascript" src="./library.js"></script>
 </head>
 
-<body>
+<body ondragstart="window.event.returnValue=false;return false;">
   <div id="navigationBar" style="flex: none; position: relative; background: #f8f8f8; font-size: 14pt; color: #000000">
     习作库
   </div>
@@ -18,13 +18,13 @@
     <div class="buttons">
       <div class="content1Container" onclick="setTheme()">
         <div class="themeButton">
-          <img class="themeImage" src="../images/light.svg" />
-          <p class="themeText">白</p>
+          <img class="themeImage" src="../images/light.svg" title="主题" alt="主题" />
+          <p class="themeText">白色</p>
         </div>
       </div>
-      <div class="content2Container" onclick="setCycling()">
+      <div class="content2Container" onclick="setCycling()" accesskey="Tab">
         <div class="cycleButton">
-          <img class="cycleImage" src="../images/noCycle.svg" />
+          <img class="cycleImage" src="../images/noCycle.svg" title="播放设置" alt="播放设置" />
           <p class="cycleText">单次播放</p>
         </div>
       </div>

@@ -2,7 +2,7 @@ let workList = [
   { title: '空曲目1', isPlaying: 0 },
   { title: '空曲目2', isPlaying: 0 },
 ]
-let imageNames = ["noCycle", "noListCycle", "listCycle", "singleCycle"]
+let cycleTxt = ["单次播放", "单列播放", "列表循环", "单曲循环"]
 let files = []
 $.getJSON("../index.json", function (data) {
   files = data
@@ -25,7 +25,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key == ' ') {
     e.preventDefault()
     startPlay(selectingIndex)
-    window.scrollTo(0, 30 * selectingIndex);
   }
   else if (e.key == 'ArrowDown') {
     e.preventDefault()
@@ -34,6 +33,7 @@ document.addEventListener('keydown', (e) => {
     } else {
       selectingIndex = 0
     }
+    selectWork(selectingIndex)
   } else if (e.key == 'ArrowUp') {
     e.preventDefault()
     if (selectingIndex != 0) {
@@ -41,37 +41,26 @@ document.addEventListener('keydown', (e) => {
     } else {
       selectingIndex = files.length - 1
     }
+    selectWork(selectingIndex)
   } else if (e.key == 'ArrowLeft') {
     e.preventDefault()
-    if (!audio.paused && !audio.stopped) {
-      audio.pause()
-      audio.currentTime = audio.currentTime - 5
-      setCurrentLength(getFixed(audio.currentTime / audio.duration * 100).toString() + '%')
-      shouldUpdate = true
-      audio.addEventListener('canplay', function () {
-        audio.play()
-        stopped = false
-      })
+    if (cycling != 0) {
+      cycling -= 1
+    } else {
+      cycling = 3
     }
+    $('.cycleImage').attr('hidden', 'true')
+    $('.cycleImage').eq(cycling).removeAttr('hidden')
+    setText(true, 'cycleText', cycleTxt[cycling])
   } else if (e.key == 'ArrowRight') {
     e.preventDefault()
-    if (!audio.paused && !audio.stopped) {
-      audio.pause()
-      audio.currentTime = audio.currentTime + 5
-      setCurrentLength(getFixed(audio.currentTime / audio.duration * 100).toString() + '%')
-      shouldUpdate = true
-      audio.addEventListener('canplay', function () {
-        audio.play()
-        stopped = false
-      })
-    }
-  } else if (e.key == 'Tab') {
     setCycling()
   }
 });
 window.onload = function () {
   checkOS()
   setWorkInfo()
+  selectWork(selectingIndex)
   checkTime()
 }
 
@@ -80,10 +69,17 @@ function checkTime () {
   let t = time.getHours()
   if (t < 7 || t > 18) {
     theme = 1
-    setAttr(true, 'themeImage', 'src', '../images/dark.svg')
+    $('.themeImage').attr('hidden', 'true')
+    $('.themeImage').eq(theme).removeAttr('hidden')
     setText(true, 'themeText', '黑色')
     changeTheme(1)
   }
+}
+
+function selectWork (index) {
+  $('.work').css('border', 'none')
+  $('.work').eq(index).css('border', '1px solid rgb(26 164 205 / 63%)')
+  window.scrollTo(0, 80 * selectingIndex)
 }
 
 function checkOS () {
@@ -141,20 +137,9 @@ function setCycling () {
   } else {
     cycling = 0
   }
-  let themeName = ""
-  if (theme) {
-    themeName = "_dark"
-  }
-  setAttr(true, 'cycleImage', 'src', '../images/' + imageNames[cycling] + themeName + '.svg')
-  if (cycling == 0) {
-    setText(true, 'cycleText', '单次播放')
-  } else if (cycling == 1) {
-    setText(true, 'cycleText', '单列播放')
-  } else if (cycling == 2) {
-    setText(true, 'cycleText', '列表循环')
-  } else {
-    setText(true, 'cycleText', '单曲循环')
-  }
+  $('.cycleImage').attr('hidden', 'true')
+  $('.cycleImage').eq(cycling).removeAttr('hidden')
+  setText(true, 'cycleText', cycleTxt[cycling])
 }
 
 function setTheme () {
@@ -163,15 +148,14 @@ function setTheme () {
   } else {
     theme = 0
   }
+  $('.themeImage').attr('hidden', 'true')
+  $('.themeImage').eq(theme).removeAttr('hidden')
   if (theme == 0) {
-    setAttr(true, 'themeImage', 'src', '../images/light.svg')
     setText(true, 'themeText', '白色')
-    changeTheme(0)
   } else {
-    setAttr(true, 'themeImage', 'src', '../images/dark.svg')
     setText(true, 'themeText', '黑色')
-    changeTheme(1)
   }
+  changeTheme(theme)
 }
 
 function changeTheme (value) {
@@ -189,11 +173,16 @@ function changeTheme (value) {
     $('.workWholeLine').css("background", "rgb(69 124 145)")
     $('.workBottomLine').css("background", "rgb(26 97 124)")
     $('.control').css("border-left", "1px solid #fefefe17")
-    setAttr(true, 'cycleImage', 'src', '../images/' + imageNames[cycling] + "_dark" + '.svg')
-    $('.controlImage').attr('src', '../images/play' + "_dark" + '.svg')
-    if (playingIndex != -1 && workList[playingIndex].isPlaying == 1) {
-      $('.controlImage').eq(playingIndex).attr('src', '../images/pause' + "_dark" + '.svg')
-    }
+    $('.cycleImage').each(function () {
+      str = $(this).attr('src')
+      str = str.replace('.svg', "_dark.svg")
+      $(this).attr('src', str)
+    })
+    $('.controlImage').each(function () {
+      str = $(this).attr('src')
+      str = str.replace('.svg', "_dark.svg")
+      $(this).attr('src', str)
+    })
   } else {
     $('#navigationBar').css("color", "black")
     $('#navigationBar').css("background", "#f8f8f8")
@@ -208,11 +197,16 @@ function changeTheme (value) {
     $('.workWholeLine').css("background", "#bfedff")
     $('.workBottomLine').css("background", "#45b9e5")
     $('.control').css("border-left", "1px solid #00000017")
-    setAttr(true, 'cycleImage', 'src', '../images/' + imageNames[cycling] + '.svg')
-    $('.controlImage').attr('src', '../images/play.svg')
-    if (playingIndex != -1 && workList[playingIndex].isPlaying == 1) {
-      $('.controlImage').eq(playingIndex).attr('src', '../images/pause.svg')
-    }
+    $('.cycleImage').each(function () {
+      str = $(this).attr('src')
+      str = str.replace('_dark.svg', ".svg")
+      $(this).attr('src', str)
+    })
+    $('.controlImage').each(function () {
+      str = $(this).attr('src')
+      str = str.replace('_dark.svg', ".svg")
+      $(this).attr('src', str)
+    })
   }
 }
 
@@ -258,6 +252,15 @@ function setTapLength (value) {
   }
 }
 
+function setPlayImage (value) {
+  $('.controlImage.play').removeAttr('hidden')
+  $('.controlImage.pause').attr('hidden', 'true')
+  if (value) {
+    $('.controlImage.play').eq(playingIndex).attr('hidden', 'true')
+    $('.controlImage.pause').eq(playingIndex).removeAttr('hidden')
+  }
+}
+
 function startPlay (index) {
   setCurrentLength('0%')
   setTapLength('0%')
@@ -269,9 +272,7 @@ function startPlay (index) {
     if (theme) {
       themeName = "_dark"
     }
-    document
-      .getElementsByClassName('controlImage')
-    [playingIndex].setAttribute('src', '../images/play' + themeName + '.svg')
+    setPlayImage(0)
   }
   audio.pause()
   audio = new Audio()
@@ -297,7 +298,7 @@ function startPlay (index) {
       showTapLength(false)
       if (playingIndex != -1) {
         workList[playingIndex].isPlaying = 0
-        setAttr(true, 'controlImage', 'src', '../images/play' + themeName + '.svg')
+        setPlayImage(0)
       }
       playingIndex = -1;
     } else if (cycling == 1) {
@@ -311,7 +312,7 @@ function startPlay (index) {
         showTapLength(false)
         if (playingIndex != -1) {
           workList[playingIndex].isPlaying = 0
-          setAttr(true, 'controlImage', 'src', '../images/play' + themeName + '.svg')
+          setPlayImage(0)
         }
         playingIndex = -1;
       }
@@ -328,19 +329,15 @@ function startPlay (index) {
   shouldUpdate = true
   if (playingIndex != -1) {
     workList[playingIndex].isPlaying = 1
-    let themeName = ""
-    if (theme) {
-      themeName = "_dark"
-    }
-    document
-      .getElementsByClassName('controlImage')
-    [playingIndex].setAttribute('src', '../images/pause' + themeName + '.svg')
+    setPlayImage(1)
   }
   audio.addEventListener('canplay', function () {
     audio.play()
   })
   stopped = false
   showCurrentLength(true)
+  selectingIndex = playingIndex
+  selectWork(playingIndex)
 }
 
 function bindEvent (dom, eventName, listener) {
@@ -393,9 +390,14 @@ function setWorkInfo () {
   >
     <div class="control">
       <image
-        class="controlImage"
+        class="controlImage play"
         src="../images/play.svg"
-      ></image>
+      />
+      <image
+        class="controlImage pause"
+        src="../images/pause.svg"
+        hidden="hidden"
+      />
     </div>
   </div></div>`
   }
@@ -461,40 +463,27 @@ function onClick (e) {
   //点击控件播放/暂停
   let index = Number(e.getAttribute('data'))
   if (playingIndex == index) {
-    let themeName = ""
-    if (theme) {
-      themeName = "_dark"
-    }
     if (audio.ended) {
       playingIndex = index;
-      console.log('end')
       audio.pause()
       shouldUpdate = true
       audio.play()
       stopped = false
       workList[playingIndex].isPlaying = 1
-      document
-        .getElementsByClassName('controlImage')
-      [playingIndex].setAttribute('src', '../images/pause' + themeName + '.svg')
-
+      setPlayImage(1)
     } else if (audio.paused) {
-      console.log('paused')
       shouldUpdate = true
       audio.play()
       stopped = false
       workList[playingIndex].isPlaying = 1
-      document
-        .getElementsByClassName('controlImage')
-      [playingIndex].setAttribute('src', '../images/pause' + themeName + '.svg')
+      setPlayImage(1)
     } else {
       audio.pause()
       showCurrentLength(true)
       showTapLength(false)
       shouldUpdate = false
       workList[playingIndex].isPlaying = 0
-      document
-        .getElementsByClassName('controlImage')
-      [playingIndex].setAttribute('src', '../images/play' + themeName + '.svg')
+      setPlayImage(0)
     }
   } else {
     startPlay(index)

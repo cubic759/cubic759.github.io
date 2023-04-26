@@ -26,7 +26,9 @@ let workBorder = "#79d9ff"
 document.addEventListener('keydown', (e) => {
   if (e.key == ' ') {
     e.preventDefault()
-    startPlay(selectingIndex)
+    var btn = document.createElement("button")
+    btn.setAttribute('data', selectingIndex)
+    onClick(btn)
   }
   else if (e.key == 'ArrowDown') {
     e.preventDefault()
@@ -420,25 +422,25 @@ function setWorkInfo () {
   if (isMobile) {
     for (let i of a) {
       bindEvent(i, 'touchmove', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchMove(e)
         }
       })
       bindEvent(i, 'touchend', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchEnd(e)
         }
       })
       bindEvent(i, 'touchstart', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchStart(e)
         }
       })
       bindEvent(i, 'touchcancel', function () {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           onTouchCancel()
         }
       })
@@ -446,26 +448,26 @@ function setWorkInfo () {
   } else {
     for (let i of a) {
       bindEvent(i, 'mousemove', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onMouseMove(e)
         }
       })
       bindEvent(i, 'mouseleave', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onMouseLeave(e)
         }
       })
       bindEvent(i, 'mousedown', function (e) {
-        if (!audio.ended && !audio.paused) {
+        if (!audio?.ended && !audio?.paused) {
           e['data'] = i.lastChild.getAttribute('data')
           onTouchStart(e)
         }
       })
     }
     bindEvent(document, 'mouseup', function (e) {
-      if (!audio.ended && !audio.paused) {
+      if (!audio?.ended && !audio?.paused) {
         onTouchEnd(e)
       }
     })
@@ -476,7 +478,8 @@ function onClick (e) {
   //点击控件播放/暂停
   let index = Number(e.getAttribute('data'))
   if (playingIndex == index) {
-    if (audio.ended) {
+    if (audio?.ended) {
+      //console.log('a')
       playingIndex = index;
       audio.pause()
       shouldUpdate = true
@@ -484,13 +487,15 @@ function onClick (e) {
       stopped = false
       workList[playingIndex].isPlaying = 1
       setPlayImage(1)
-    } else if (audio.paused) {
+    } else if (audio?.paused) {
+      //console.log('b')
       shouldUpdate = true
       audio.play()
       stopped = false
       workList[playingIndex].isPlaying = 1
       setPlayImage(1)
     } else {
+      //console.log('c')
       audio.pause()
       showCurrentLength(true)
       showTapLength(false)
@@ -499,6 +504,7 @@ function onClick (e) {
       setPlayImage(0)
     }
   } else {
+    //console.log('d')
     startPlay(index)
   }
 }
@@ -511,7 +517,7 @@ function onMouseLeave (e) {
 }
 function onMouseMove (e) {
   //滑动调整进度
-  if (e && !audio.paused && !audio.ended) {
+  if (e && !audio?.paused && !audio?.ended) {
     let index = Number(e.data)
     if (index == playingIndex) {
       if (touching && shouldUpdate) {
@@ -535,7 +541,7 @@ function onMouseMove (e) {
 }
 function onTouchMove (e) {
   //滑动调整进度
-  if (e && !audio.paused && !audio.ended && touching) {
+  if (e && !audio?.paused && !audio?.ended && touching) {
     let index = Number(e.data)
     if (index == playingIndex) {
       e.preventDefault()
@@ -558,7 +564,7 @@ function onTouchMove (e) {
 function onTouchStart (e) {
   clickedIndex = e.data
   touching = true
-  if (!audio.paused && !audio.ended) {
+  if (!audio?.paused && !audio?.ended) {
     timeStamp = e.timeStamp
   }
 }
@@ -580,7 +586,7 @@ function onTouchEnd (e) {
   //手指离开设置进度
   touching = false
 
-  if (!audio.paused && clickedIndex != -1) {
+  if (!audio?.paused && clickedIndex != -1) {
     let index = Number(clickedIndex)
     if (index == playingIndex) {
       tapped = e.timeStamp - timeStamp < 350
@@ -607,7 +613,7 @@ function onTouchEnd (e) {
 function onTouchCancel () {
   //恢复原状
   showTapLength(false)
-  if (!audio.paused && !audio.ended && !shouldUpdate) {
+  if (!audio?.paused && !audio?.ended && !shouldUpdate) {
     shouldUpdate = true
   }
 }

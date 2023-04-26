@@ -479,7 +479,6 @@ function onClick (e) {
   let index = Number(e.getAttribute('data'))
   if (playingIndex == index) {
     if (audio?.ended) {
-      //console.log('a')
       playingIndex = index;
       audio.pause()
       shouldUpdate = true
@@ -488,14 +487,12 @@ function onClick (e) {
       workList[playingIndex].isPlaying = 1
       setPlayImage(1)
     } else if (audio?.paused) {
-      //console.log('b')
       shouldUpdate = true
       audio.play()
       stopped = false
       workList[playingIndex].isPlaying = 1
       setPlayImage(1)
     } else {
-      //console.log('c')
       audio.pause()
       showCurrentLength(true)
       showTapLength(false)
@@ -504,7 +501,6 @@ function onClick (e) {
       setPlayImage(0)
     }
   } else {
-    //console.log('d')
     startPlay(index)
   }
 }

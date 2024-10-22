@@ -4,10 +4,7 @@ let workList = [
 ]
 let cycleTxt = ["单次播放", "单列播放", "列表循环", "单曲循环"]
 let themeTxt = ["明亮", "黑暗"]
-let files = []
-$.getJSON("../index.json", function (data) {
-  files = data
-});
+let files = [{"title":"2023-2-23"},{"title":"2022-11-23"},{"title":"2022-05-04"},{"title":"2022-04-01"},{"title":"2022-03-06"},{"title":"2022-03-01"},{"title":"2022-02-26"},{"title":"2022-02-25"}]
 let audio = new Audio()
 let playingIndex = -1
 let shouldUpdate = false
